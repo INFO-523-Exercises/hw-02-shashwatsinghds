@@ -3,18 +3,18 @@ title: "hw02-01"
 author: "Shashwat Singh"
 format: html
 editor: visual
-description: "Diagnosing like a Doctor: Exploring a novel data set and produce publication quality tables and reports, performing  basic operations such as identifying summary statistics and outliers in the data."
+description: "Exploring like a Data Adventurer: Exploring the normality of numerical columns in a novel data set and producing publication quality tables and reports."
 ---
 
-# Diagnosing like a Doctor
+# Exploring like a Data Adventurer
 
-# Install Required Packages
+# Required Setup
 
 ```{r}
-# Sets the number of significant figures to two
+# Sets the number of significant figures to two - e.g., 0.01
 options(digits = 2)
 
-# Checking and installing pacman 
+# Required package for quick package downloading and loading 
 if (!require(pacman))
   install.packages("pacman")
 

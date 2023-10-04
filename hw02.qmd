@@ -3,7 +3,7 @@ title: "hw02-01"
 author: "Shashwat Singh"
 format: html
 editor: visual
-description: "Diagnosing like a Doctor: Exploring a novel data set and produce publication quality tables and reports, performing  basic operations such as identifying summary statistics and outliers in the data."
+description: "Diagnosing like a Doctor: Performing various basic operations such as identifying summary statistics and outliers in the data."
 ---
 
 # Diagnosing like a Doctor
