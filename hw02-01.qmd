@@ -177,5 +177,5 @@ dataset |>
 # Produce an HTML Summary of a Data Set
 
 ```{r}
-#diagnose_web_report(dataset)
+diagnose_web_report(dataset)
 ```

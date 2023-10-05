@@ -1,0 +1,5599 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Shashwat Singh">
+<meta name="description" content="Exploring like a Data Adventurer: Exploring the normality of numerical columns in a novel data set and producing publication quality tables and reports.Using summary statistics to better understand individual columns in a data set.">
+
+<title>hw02-01</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="hw02-02_files/libs/clipboard/clipboard.min.js"></script>
+<script src="hw02-02_files/libs/quarto-html/quarto.js"></script>
+<script src="hw02-02_files/libs/quarto-html/popper.min.js"></script>
+<script src="hw02-02_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="hw02-02_files/libs/quarto-html/anchor.min.js"></script>
+<link href="hw02-02_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="hw02-02_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="hw02-02_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="hw02-02_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="hw02-02_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">hw02-01</h1>
+</div>
+
+<div>
+  <div class="description">
+    Exploring like a Data Adventurer: Exploring the normality of numerical columns in a novel data set and producing publication quality tables and reports.Using summary statistics to better understand individual columns in a data set.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Shashwat Singh </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="exploring-like-a-data-adventurer" class="level1">
+<h1>Exploring like a Data Adventurer</h1>
+</section>
+<section id="required-setup" class="level1">
+<h1>Required Setup</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sets the number of significant figures to two - e.g., 0.01</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Required package for quick package downloading and loading </span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(pacman))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">"pacman"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: pacman</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Downloads and load required packages</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(dlookr, <span class="co"># Exploratory data analysis</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>               formattable, <span class="co"># HTML tables from R outputs</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>               here, <span class="co"># Standardizes paths to data</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>               kableExtra, <span class="co"># Alternative to formattable</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>               knitr, <span class="co"># Needed to write HTML reports</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>               missRanger, <span class="co"># To generate NAs</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>               tidyverse) <span class="co"># Powerful data wrangling package suite</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="load-and-examine-a-data-set" class="level1">
+<h1>Load and Examine a Data Set</h1>
+<p>Using the dataset from tidyurl- The dataset contains stock prices of big tech companies and tries to analyse the collapse of “Big Tech” stock prices. The data comes from Yahoo Finance via Kaggle</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading the dataset</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/data/big_tech_stock_prices.csv"</span>) </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Formattable data</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">formattable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+stock_symbol
+</th>
+<th style="text-align:right;">
+date
+</th>
+<th style="text-align:right;">
+open
+</th>
+<th style="text-align:right;">
+high
+</th>
+<th style="text-align:right;">
+low
+</th>
+<th style="text-align:right;">
+close
+</th>
+<th style="text-align:right;">
+adj_close
+</th>
+<th style="text-align:right;">
+volume
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+2010-01-04
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.7
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+6.5
+</td>
+<td style="text-align:right;">
+493729600
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+2010-01-05
+</td>
+<td style="text-align:right;">
+7.7
+</td>
+<td style="text-align:right;">
+7.7
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.7
+</td>
+<td style="text-align:right;">
+6.5
+</td>
+<td style="text-align:right;">
+601904800
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+2010-01-06
+</td>
+<td style="text-align:right;">
+7.7
+</td>
+<td style="text-align:right;">
+7.7
+</td>
+<td style="text-align:right;">
+7.5
+</td>
+<td style="text-align:right;">
+7.5
+</td>
+<td style="text-align:right;">
+6.4
+</td>
+<td style="text-align:right;">
+552160000
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+2010-01-07
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.5
+</td>
+<td style="text-align:right;">
+7.5
+</td>
+<td style="text-align:right;">
+6.4
+</td>
+<td style="text-align:right;">
+477131200
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+2010-01-08
+</td>
+<td style="text-align:right;">
+7.5
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.5
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+6.5
+</td>
+<td style="text-align:right;">
+447610800
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+2010-01-11
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.6
+</td>
+<td style="text-align:right;">
+7.4
+</td>
+<td style="text-align:right;">
+7.5
+</td>
+<td style="text-align:right;">
+6.4
+</td>
+<td style="text-align:right;">
+462229600
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+</section>
+<section id="diagnose-your-data" class="level1">
+<h1>Diagnose your Data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Properties of the data</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diagnose</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">formattable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+variables
+</th>
+<th style="text-align:right;">
+types
+</th>
+<th style="text-align:right;">
+missing_count
+</th>
+<th style="text-align:right;">
+missing_percent
+</th>
+<th style="text-align:right;">
+unique_count
+</th>
+<th style="text-align:right;">
+unique_rate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+character
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.00031
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+character
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3287
+</td>
+<td style="text-align:right;">
+0.07290
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+numeric
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+29798
+</td>
+<td style="text-align:right;">
+0.66089
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+numeric
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+30056
+</td>
+<td style="text-align:right;">
+0.66661
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+numeric
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+30028
+</td>
+<td style="text-align:right;">
+0.66599
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+numeric
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+30965
+</td>
+<td style="text-align:right;">
+0.68677
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+numeric
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+41279
+</td>
+<td style="text-align:right;">
+0.91552
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+integer
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+43550
+</td>
+<td style="text-align:right;">
+0.96589
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+<ul>
+<li><p><code>variables</code>: name of each variable</p></li>
+<li><p><code>types</code>: data type of each variable</p></li>
+<li><p><code>missing_count</code>: number of missing values</p></li>
+<li><p><code>missing_percent</code>: percentage of missing values</p></li>
+<li><p><code>unique_count</code>: number of unique values</p></li>
+<li><p><code>unique_rate</code>: rate of unique value - unique_count / number of observations</p></li>
+</ul>
+<section id="box-plot" class="level2">
+<h2 class="anchored" data-anchor-id="box-plot">Box Plot</h2>
+<p><img src="/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/Images/boxplot.png" class="img-fluid"></p>
+</section>
+<section id="skewness" class="level2">
+<h2 class="anchored" data-anchor-id="skewness">Skewness</h2>
+<p><img src="/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/Images/skew_intro-dark.png" class="img-fluid"></p>
+<section id="note" class="level4">
+<h4 class="anchored" data-anchor-id="note"><strong>NOTE</strong></h4>
+<ul>
+<li><p>“Skewness” has multiple definitions. Several underlying equations mey be at play</p></li>
+<li><p>Skewness is “designed” for distributions with one peak (<em>unimodal</em>); it’s meaningless for distributions with multiple peaks (<em>multimodal</em>).</p></li>
+<li><p>Most default skewness definitions are not robust: a single outlier could completely distort the skewness value.</p></li>
+<li><p>We can’t make conclusions about the locations of the mean and the median based on the skewness sign.</p></li>
+</ul>
+</section>
+</section>
+<section id="kurtosis" class="level2">
+<h2 class="anchored" data-anchor-id="kurtosis">Kurtosis</h2>
+<p><img src="/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/Images/kurt_intro-dark.png" class="img-fluid"></p>
+<section id="note-1" class="level4">
+<h4 class="anchored" data-anchor-id="note-1"><strong>NOTE</strong></h4>
+<ul>
+<li><p>There are multiple definitions of kurtosis - i.e., “kurtosis” and “excess kurtosis,” but there are other definitions of this measure.</p></li>
+<li><p>Kurtosis may work fine for distributions with one peak (<em>unimodal</em>); it’s meaningless for distributions with multiple peaks (<em>multimodal</em>).</p></li>
+<li><p>The classic definition of kurtosis is not robust: it could be easily spoiled by extreme outliers.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="describe-your-continuous-data" class="level1">
+<h1>Describe your Continuous Data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary statistics </span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">describe</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 26
+  described_variables     n    na   mean     sd se_mean    IQR skewness kurtosis
+  &lt;chr&gt;               &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+1 open                45088     0 8.93e1 1.02e2 4.79e-1 1.03e2     2.32     6.63
+2 high                45088     0 9.04e1 1.03e2 4.85e-1 1.04e2     2.32     6.59
+3 low                 45088     0 8.81e1 1.00e2 4.72e-1 1.02e2     2.32     6.65
+4 close               45088     0 8.93e1 1.02e2 4.78e-1 1.03e2     2.32     6.62
+5 adj_close           45088     0 8.52e1 1.01e2 4.76e-1 9.16e1     2.44     7.21
+6 volume              45088     0 5.30e7 9.32e7 4.39e+5 4.88e7     5.75    49.8 
+# ℹ 17 more variables: p00 &lt;dbl&gt;, p01 &lt;dbl&gt;, p05 &lt;dbl&gt;, p10 &lt;dbl&gt;, p20 &lt;dbl&gt;,
+#   p25 &lt;dbl&gt;, p30 &lt;dbl&gt;, p40 &lt;dbl&gt;, p50 &lt;dbl&gt;, p60 &lt;dbl&gt;, p70 &lt;dbl&gt;,
+#   p75 &lt;dbl&gt;, p80 &lt;dbl&gt;, p90 &lt;dbl&gt;, p95 &lt;dbl&gt;, p99 &lt;dbl&gt;, p100 &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<ul>
+<li><p><code>describes_variables</code>: name of the column being described</p></li>
+<li><p><code>n</code>: number of observations excluding missing values</p></li>
+<li><p><code>na</code>: number of missing values</p></li>
+<li><p><code>mean</code>: arithmetic average</p></li>
+<li><p><code>sd</code>: standard deviation</p></li>
+<li><p><code>se_mean</code>: standard error mean. sd/sqrt(n)</p></li>
+<li><p><code>IQR</code>: interquartile range (Q3-Q1)</p></li>
+<li><p><code>skewness</code>: skewness</p></li>
+<li><p><code>kurtosis</code>: kurtosis</p></li>
+<li><p><code>p25</code>: Q1. 25% percentile</p></li>
+<li><p><code>p50</code>: median. 50% percentile</p></li>
+<li><p><code>p75</code>: Q3. 75% percentile</p></li>
+<li><p><code>p01</code>, <code>p05</code>, <code>p10</code>, <code>p20</code>, <code>p30</code>: 1%, 5%, 20%, 30% percentiles</p></li>
+<li><p><code>p40</code>, <code>p60</code>, <code>p70</code>, <code>p80</code>: 40%, 60%, 70%, 80% percentiles</p></li>
+<li><p><code>p90</code>, <code>p95</code>, <code>p99</code>, <code>p100</code>: 90%, 95%, 99%, 100% percentiles</p></li>
+</ul>
+</section>
+<section id="describe-your-continuous-data-refined" class="level1">
+<h1>Describe your Continuous Data: Refined</h1>
+<p>The above is pretty overwhelming, and most people don’t care about percentiles outside of Q1, Q3, and the median (Q2).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary statistics, selecting the desired ones</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">describe</span>()<span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(described_variables, n, na, mean, sd, se_mean, IQR, skewness, kurtosis, p25, p50, p75) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 12
+  described_variables     n    na   mean     sd se_mean    IQR skewness kurtosis
+  &lt;chr&gt;               &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+1 open                45088     0 8.93e1 1.02e2 4.79e-1 1.03e2     2.32     6.63
+2 high                45088     0 9.04e1 1.03e2 4.85e-1 1.04e2     2.32     6.59
+3 low                 45088     0 8.81e1 1.00e2 4.72e-1 1.02e2     2.32     6.65
+4 close               45088     0 8.93e1 1.02e2 4.78e-1 1.03e2     2.32     6.62
+5 adj_close           45088     0 8.52e1 1.01e2 4.76e-1 9.16e1     2.44     7.21
+6 volume              45088     0 5.30e7 9.32e7 4.39e+5 4.88e7     5.75    49.8 
+# ℹ 3 more variables: p25 &lt;dbl&gt;, p50 &lt;dbl&gt;, p75 &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="describe-categorical-variables" class="level1">
+<h1>Describe Categorical Variables</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diagnose_category</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">formattable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+variables
+</th>
+<th style="text-align:right;">
+levels
+</th>
+<th style="text-align:right;">
+N
+</th>
+<th style="text-align:right;">
+freq
+</th>
+<th style="text-align:right;">
+ratio
+</th>
+<th style="text-align:right;">
+rank
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+stock_symbol
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+7.255
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-18
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-21
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-22
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-23
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-24
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-25
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-29
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-30
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-05-31
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+date
+</td>
+<td style="text-align:right;">
+2012-06-01
+</td>
+<td style="text-align:right;">
+45088
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+<ul>
+<li><p><code>variables</code>: category names</p></li>
+<li><p><code>levels</code>: group names within categories</p></li>
+<li><p><code>N</code>: number of observation</p></li>
+<li><p><code>freq</code>: number of observation at group level / number of observation at category level</p></li>
+<li><p><code>ratio</code>: percentage of observation at group level / number of observation at category level</p></li>
+<li><p><code>rank</code>: rank of the occupancy ratio of levels (order in which the groups are in the category)</p></li>
+</ul>
+<section id="group-descriptive-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="group-descriptive-statistics">Group Descriptive Statistics</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(stock_symbol) <span class="sc">|&gt;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">describe</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(described_variables, stock_symbol, n, na, mean, sd, se_mean, IQR, skewness, kurtosis, p25, p50, p75) <span class="sc">|&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">formattable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+described_variables
+</th>
+<th style="text-align:right;">
+stock_symbol
+</th>
+<th style="text-align:right;">
+n
+</th>
+<th style="text-align:right;">
+na
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+sd
+</th>
+<th style="text-align:right;">
+se_mean
+</th>
+<th style="text-align:right;">
+IQR
+</th>
+<th style="text-align:right;">
+skewness
+</th>
+<th style="text-align:right;">
+kurtosis
+</th>
+<th style="text-align:right;">
+p25
+</th>
+<th style="text-align:right;">
+p50
+</th>
+<th style="text-align:right;">
+p75
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.9e+01
+</td>
+<td style="text-align:right;">
+4.8e+01
+</td>
+<td style="text-align:right;">
+8.4e-01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+1.34
+</td>
+<td style="text-align:right;">
+0.381
+</td>
+<td style="text-align:right;">
+1.7e+01
+</td>
+<td style="text-align:right;">
+2.7e+01
+</td>
+<td style="text-align:right;">
+5.5e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+<td style="text-align:right;">
+3.0e+00
+</td>
+<td style="text-align:right;">
+2.5e+02
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+-0.050
+</td>
+<td style="text-align:right;">
+4.3e+01
+</td>
+<td style="text-align:right;">
+9.8e+01
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.9e+01
+</td>
+<td style="text-align:right;">
+5.4e+01
+</td>
+<td style="text-align:right;">
+9.5e-01
+</td>
+<td style="text-align:right;">
+8.0e+01
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.623
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+9.3e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+7.1e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+-0.359
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+7.6e+01
+</td>
+<td style="text-align:right;">
+1.6e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2.9e+01
+</td>
+<td style="text-align:right;">
+1.4e+01
+</td>
+<td style="text-align:right;">
+2.4e-01
+</td>
+<td style="text-align:right;">
+2.5e+01
+</td>
+<td style="text-align:right;">
+0.47
+</td>
+<td style="text-align:right;">
+-1.156
+</td>
+<td style="text-align:right;">
+1.7e+01
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+<td style="text-align:right;">
+4.1e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.9e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+6.3e-01
+</td>
+<td style="text-align:right;">
+4.1e+01
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.475
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+3.9e+01
+</td>
+<td style="text-align:right;">
+6.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.4e+01
+</td>
+<td style="text-align:right;">
+2.5e-01
+</td>
+<td style="text-align:right;">
+1.9e+01
+</td>
+<td style="text-align:right;">
+-0.55
+</td>
+<td style="text-align:right;">
+0.144
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.2e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.1e+01
+</td>
+<td style="text-align:right;">
+1.4e+01
+</td>
+<td style="text-align:right;">
+2.4e-01
+</td>
+<td style="text-align:right;">
+2.5e+01
+</td>
+<td style="text-align:right;">
+0.40
+</td>
+<td style="text-align:right;">
+-1.139
+</td>
+<td style="text-align:right;">
+1.9e+01
+</td>
+<td style="text-align:right;">
+2.8e+01
+</td>
+<td style="text-align:right;">
+4.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+2688
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+8.7e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.58
+</td>
+<td style="text-align:right;">
+-0.204
+</td>
+<td style="text-align:right;">
+7.8e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+9.5e+01
+</td>
+<td style="text-align:right;">
+8.9e+01
+</td>
+<td style="text-align:right;">
+1.6e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.018
+</td>
+<td style="text-align:right;">
+2.6e+01
+</td>
+<td style="text-align:right;">
+5.0e+01
+</td>
+<td style="text-align:right;">
+1.3e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.8e+02
+</td>
+<td style="text-align:right;">
+3.1e+00
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.478
+</td>
+<td style="text-align:right;">
+3.5e+01
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+3.3e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.0e+01
+</td>
+<td style="text-align:right;">
+6.9e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+5.8e+01
+</td>
+<td style="text-align:right;">
+1.75
+</td>
+<td style="text-align:right;">
+2.438
+</td>
+<td style="text-align:right;">
+3.7e+00
+</td>
+<td style="text-align:right;">
+1.2e+01
+</td>
+<td style="text-align:right;">
+6.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.3e+01
+</td>
+<td style="text-align:right;">
+1.8e+01
+</td>
+<td style="text-align:right;">
+3.1e-01
+</td>
+<td style="text-align:right;">
+2.2e+01
+</td>
+<td style="text-align:right;">
+1.08
+</td>
+<td style="text-align:right;">
+0.494
+</td>
+<td style="text-align:right;">
+2.9e+01
+</td>
+<td style="text-align:right;">
+3.7e+01
+</td>
+<td style="text-align:right;">
+5.1e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+3148
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.9e+01
+</td>
+<td style="text-align:right;">
+9.6e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.5e+01
+</td>
+<td style="text-align:right;">
+1.84
+</td>
+<td style="text-align:right;">
+1.967
+</td>
+<td style="text-align:right;">
+9.0e+00
+</td>
+<td style="text-align:right;">
+1.6e+01
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.1e+01
+</td>
+<td style="text-align:right;">
+4.7e+01
+</td>
+<td style="text-align:right;">
+8.3e-01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+1.33
+</td>
+<td style="text-align:right;">
+0.380
+</td>
+<td style="text-align:right;">
+1.9e+01
+</td>
+<td style="text-align:right;">
+3.0e+01
+</td>
+<td style="text-align:right;">
+5.7e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+<td style="text-align:right;">
+3.0e+00
+</td>
+<td style="text-align:right;">
+2.5e+02
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+-0.050
+</td>
+<td style="text-align:right;">
+4.3e+01
+</td>
+<td style="text-align:right;">
+9.8e+01
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.9e+01
+</td>
+<td style="text-align:right;">
+5.4e+01
+</td>
+<td style="text-align:right;">
+9.5e-01
+</td>
+<td style="text-align:right;">
+8.0e+01
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.623
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+9.3e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+7.1e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+-0.359
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+7.6e+01
+</td>
+<td style="text-align:right;">
+1.6e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.4e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.2e-01
+</td>
+<td style="text-align:right;">
+2.2e+01
+</td>
+<td style="text-align:right;">
+0.41
+</td>
+<td style="text-align:right;">
+-1.132
+</td>
+<td style="text-align:right;">
+2.3e+01
+</td>
+<td style="text-align:right;">
+3.0e+01
+</td>
+<td style="text-align:right;">
+4.5e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.9e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+6.3e-01
+</td>
+<td style="text-align:right;">
+4.1e+01
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.475
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+3.9e+01
+</td>
+<td style="text-align:right;">
+6.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+<td style="text-align:right;">
+4.2e-01
+</td>
+<td style="text-align:right;">
+3.7e+01
+</td>
+<td style="text-align:right;">
+0.45
+</td>
+<td style="text-align:right;">
+-0.804
+</td>
+<td style="text-align:right;">
+1.3e+02
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.3e-01
+</td>
+<td style="text-align:right;">
+2.3e+01
+</td>
+<td style="text-align:right;">
+0.44
+</td>
+<td style="text-align:right;">
+-1.058
+</td>
+<td style="text-align:right;">
+2.5e+01
+</td>
+<td style="text-align:right;">
+3.4e+01
+</td>
+<td style="text-align:right;">
+4.8e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+2688
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+8.7e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.58
+</td>
+<td style="text-align:right;">
+-0.204
+</td>
+<td style="text-align:right;">
+7.8e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+8.8e+01
+</td>
+<td style="text-align:right;">
+1.5e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.025
+</td>
+<td style="text-align:right;">
+3.2e+01
+</td>
+<td style="text-align:right;">
+5.6e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.8e+02
+</td>
+<td style="text-align:right;">
+3.1e+00
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.478
+</td>
+<td style="text-align:right;">
+3.5e+01
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+3.3e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.1e+01
+</td>
+<td style="text-align:right;">
+6.9e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+5.8e+01
+</td>
+<td style="text-align:right;">
+1.75
+</td>
+<td style="text-align:right;">
+2.439
+</td>
+<td style="text-align:right;">
+4.0e+00
+</td>
+<td style="text-align:right;">
+1.2e+01
+</td>
+<td style="text-align:right;">
+6.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.6e+01
+</td>
+<td style="text-align:right;">
+1.7e+01
+</td>
+<td style="text-align:right;">
+2.9e-01
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+1.07
+</td>
+<td style="text-align:right;">
+0.630
+</td>
+<td style="text-align:right;">
+3.3e+01
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+5.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+3148
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.9e+01
+</td>
+<td style="text-align:right;">
+9.6e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.5e+01
+</td>
+<td style="text-align:right;">
+1.84
+</td>
+<td style="text-align:right;">
+1.967
+</td>
+<td style="text-align:right;">
+9.0e+00
+</td>
+<td style="text-align:right;">
+1.6e+01
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.2e+01
+</td>
+<td style="text-align:right;">
+4.8e+01
+</td>
+<td style="text-align:right;">
+8.4e-01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+1.33
+</td>
+<td style="text-align:right;">
+0.378
+</td>
+<td style="text-align:right;">
+1.9e+01
+</td>
+<td style="text-align:right;">
+3.0e+01
+</td>
+<td style="text-align:right;">
+5.7e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.8e+02
+</td>
+<td style="text-align:right;">
+3.1e+00
+</td>
+<td style="text-align:right;">
+2.5e+02
+</td>
+<td style="text-align:right;">
+1.03
+</td>
+<td style="text-align:right;">
+-0.067
+</td>
+<td style="text-align:right;">
+4.3e+01
+</td>
+<td style="text-align:right;">
+9.8e+01
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6.0e+01
+</td>
+<td style="text-align:right;">
+5.5e+01
+</td>
+<td style="text-align:right;">
+9.6e-01
+</td>
+<td style="text-align:right;">
+8.1e+01
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.628
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+9.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+7.2e+01
+</td>
+<td style="text-align:right;">
+1.3e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+-0.369
+</td>
+<td style="text-align:right;">
+4.3e+01
+</td>
+<td style="text-align:right;">
+7.7e+01
+</td>
+<td style="text-align:right;">
+1.6e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.4e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.2e-01
+</td>
+<td style="text-align:right;">
+2.2e+01
+</td>
+<td style="text-align:right;">
+0.41
+</td>
+<td style="text-align:right;">
+-1.142
+</td>
+<td style="text-align:right;">
+2.3e+01
+</td>
+<td style="text-align:right;">
+3.0e+01
+</td>
+<td style="text-align:right;">
+4.5e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.0e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+6.3e-01
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.465
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+3.9e+01
+</td>
+<td style="text-align:right;">
+6.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+<td style="text-align:right;">
+4.2e-01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+0.46
+</td>
+<td style="text-align:right;">
+-0.820
+</td>
+<td style="text-align:right;">
+1.3e+02
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.7e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.3e-01
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+<td style="text-align:right;">
+0.44
+</td>
+<td style="text-align:right;">
+-1.058
+</td>
+<td style="text-align:right;">
+2.5e+01
+</td>
+<td style="text-align:right;">
+3.5e+01
+</td>
+<td style="text-align:right;">
+4.9e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+2688
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+8.8e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.2e+02
+</td>
+<td style="text-align:right;">
+0.58
+</td>
+<td style="text-align:right;">
+-0.219
+</td>
+<td style="text-align:right;">
+7.9e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+8.9e+01
+</td>
+<td style="text-align:right;">
+1.6e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.018
+</td>
+<td style="text-align:right;">
+3.2e+01
+</td>
+<td style="text-align:right;">
+5.6e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.8e+02
+</td>
+<td style="text-align:right;">
+3.2e+00
+</td>
+<td style="text-align:right;">
+3.0e+02
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.492
+</td>
+<td style="text-align:right;">
+3.5e+01
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+3.3e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.2e+01
+</td>
+<td style="text-align:right;">
+7.1e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+5.9e+01
+</td>
+<td style="text-align:right;">
+1.77
+</td>
+<td style="text-align:right;">
+2.507
+</td>
+<td style="text-align:right;">
+4.0e+00
+</td>
+<td style="text-align:right;">
+1.2e+01
+</td>
+<td style="text-align:right;">
+6.3e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.7e+01
+</td>
+<td style="text-align:right;">
+1.7e+01
+</td>
+<td style="text-align:right;">
+3.0e-01
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+1.08
+</td>
+<td style="text-align:right;">
+0.645
+</td>
+<td style="text-align:right;">
+3.4e+01
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+5.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+3148
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6.0e+01
+</td>
+<td style="text-align:right;">
+9.8e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.6e+01
+</td>
+<td style="text-align:right;">
+1.84
+</td>
+<td style="text-align:right;">
+1.974
+</td>
+<td style="text-align:right;">
+9.1e+00
+</td>
+<td style="text-align:right;">
+1.6e+01
+</td>
+<td style="text-align:right;">
+2.5e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.1e+01
+</td>
+<td style="text-align:right;">
+4.7e+01
+</td>
+<td style="text-align:right;">
+8.2e-01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+1.33
+</td>
+<td style="text-align:right;">
+0.383
+</td>
+<td style="text-align:right;">
+1.9e+01
+</td>
+<td style="text-align:right;">
+3.0e+01
+</td>
+<td style="text-align:right;">
+5.6e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.8e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+<td style="text-align:right;">
+3.0e+00
+</td>
+<td style="text-align:right;">
+2.4e+02
+</td>
+<td style="text-align:right;">
+1.04
+</td>
+<td style="text-align:right;">
+-0.031
+</td>
+<td style="text-align:right;">
+4.3e+01
+</td>
+<td style="text-align:right;">
+9.7e+01
+</td>
+<td style="text-align:right;">
+2.8e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.8e+01
+</td>
+<td style="text-align:right;">
+5.3e+01
+</td>
+<td style="text-align:right;">
+9.3e-01
+</td>
+<td style="text-align:right;">
+7.9e+01
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+<td style="text-align:right;">
+-0.614
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+9.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+7.0e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+-0.347
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+7.6e+01
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.3e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.2e-01
+</td>
+<td style="text-align:right;">
+2.2e+01
+</td>
+<td style="text-align:right;">
+0.41
+</td>
+<td style="text-align:right;">
+-1.124
+</td>
+<td style="text-align:right;">
+2.3e+01
+</td>
+<td style="text-align:right;">
+2.9e+01
+</td>
+<td style="text-align:right;">
+4.5e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.9e+01
+</td>
+<td style="text-align:right;">
+3.5e+01
+</td>
+<td style="text-align:right;">
+6.2e-01
+</td>
+<td style="text-align:right;">
+4.1e+01
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.487
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+6.1e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+<td style="text-align:right;">
+4.2e-01
+</td>
+<td style="text-align:right;">
+3.7e+01
+</td>
+<td style="text-align:right;">
+0.44
+</td>
+<td style="text-align:right;">
+-0.791
+</td>
+<td style="text-align:right;">
+1.3e+02
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.2e-01
+</td>
+<td style="text-align:right;">
+2.3e+01
+</td>
+<td style="text-align:right;">
+0.43
+</td>
+<td style="text-align:right;">
+-1.060
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+<td style="text-align:right;">
+3.4e+01
+</td>
+<td style="text-align:right;">
+4.8e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+2688
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+8.6e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.59
+</td>
+<td style="text-align:right;">
+-0.192
+</td>
+<td style="text-align:right;">
+7.7e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+9.9e+01
+</td>
+<td style="text-align:right;">
+8.7e+01
+</td>
+<td style="text-align:right;">
+1.5e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+3.2e+01
+</td>
+<td style="text-align:right;">
+5.5e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.8e+02
+</td>
+<td style="text-align:right;">
+3.1e+00
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+<td style="text-align:right;">
+-0.455
+</td>
+<td style="text-align:right;">
+3.4e+01
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+3.2e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.0e+01
+</td>
+<td style="text-align:right;">
+6.8e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+5.7e+01
+</td>
+<td style="text-align:right;">
+1.74
+</td>
+<td style="text-align:right;">
+2.396
+</td>
+<td style="text-align:right;">
+3.9e+00
+</td>
+<td style="text-align:right;">
+1.2e+01
+</td>
+<td style="text-align:right;">
+6.1e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.6e+01
+</td>
+<td style="text-align:right;">
+1.7e+01
+</td>
+<td style="text-align:right;">
+2.9e-01
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+1.07
+</td>
+<td style="text-align:right;">
+0.628
+</td>
+<td style="text-align:right;">
+3.3e+01
+</td>
+<td style="text-align:right;">
+4.1e+01
+</td>
+<td style="text-align:right;">
+5.3e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+3148
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.7e+01
+</td>
+<td style="text-align:right;">
+9.3e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.5e+01
+</td>
+<td style="text-align:right;">
+1.84
+</td>
+<td style="text-align:right;">
+1.962
+</td>
+<td style="text-align:right;">
+8.8e+00
+</td>
+<td style="text-align:right;">
+1.6e+01
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.1e+01
+</td>
+<td style="text-align:right;">
+4.7e+01
+</td>
+<td style="text-align:right;">
+8.3e-01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+1.33
+</td>
+<td style="text-align:right;">
+0.381
+</td>
+<td style="text-align:right;">
+1.9e+01
+</td>
+<td style="text-align:right;">
+3.0e+01
+</td>
+<td style="text-align:right;">
+5.7e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+<td style="text-align:right;">
+3.0e+00
+</td>
+<td style="text-align:right;">
+2.5e+02
+</td>
+<td style="text-align:right;">
+1.04
+</td>
+<td style="text-align:right;">
+-0.049
+</td>
+<td style="text-align:right;">
+4.3e+01
+</td>
+<td style="text-align:right;">
+9.8e+01
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.9e+01
+</td>
+<td style="text-align:right;">
+5.4e+01
+</td>
+<td style="text-align:right;">
+9.5e-01
+</td>
+<td style="text-align:right;">
+8.0e+01
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.621
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+9.3e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+7.1e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+-0.357
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+7.6e+01
+</td>
+<td style="text-align:right;">
+1.6e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.3e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.2e-01
+</td>
+<td style="text-align:right;">
+2.2e+01
+</td>
+<td style="text-align:right;">
+0.41
+</td>
+<td style="text-align:right;">
+-1.136
+</td>
+<td style="text-align:right;">
+2.3e+01
+</td>
+<td style="text-align:right;">
+3.0e+01
+</td>
+<td style="text-align:right;">
+4.5e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.9e+01
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+6.3e-01
+</td>
+<td style="text-align:right;">
+4.1e+01
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.486
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+3.9e+01
+</td>
+<td style="text-align:right;">
+6.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+2.4e+01
+</td>
+<td style="text-align:right;">
+4.2e-01
+</td>
+<td style="text-align:right;">
+3.8e+01
+</td>
+<td style="text-align:right;">
+0.45
+</td>
+<td style="text-align:right;">
+-0.806
+</td>
+<td style="text-align:right;">
+1.3e+02
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.7e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.6e+01
+</td>
+<td style="text-align:right;">
+1.3e+01
+</td>
+<td style="text-align:right;">
+2.3e-01
+</td>
+<td style="text-align:right;">
+2.3e+01
+</td>
+<td style="text-align:right;">
+0.44
+</td>
+<td style="text-align:right;">
+-1.057
+</td>
+<td style="text-align:right;">
+2.5e+01
+</td>
+<td style="text-align:right;">
+3.4e+01
+</td>
+<td style="text-align:right;">
+4.8e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+2688
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.5e+02
+</td>
+<td style="text-align:right;">
+8.7e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+0.59
+</td>
+<td style="text-align:right;">
+-0.205
+</td>
+<td style="text-align:right;">
+7.8e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0e+02
+</td>
+<td style="text-align:right;">
+8.8e+01
+</td>
+<td style="text-align:right;">
+1.5e+00
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:right;">
+0.028
+</td>
+<td style="text-align:right;">
+3.2e+01
+</td>
+<td style="text-align:right;">
+5.6e+01
+</td>
+<td style="text-align:right;">
+1.4e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.9e+02
+</td>
+<td style="text-align:right;">
+1.8e+02
+</td>
+<td style="text-align:right;">
+3.1e+00
+</td>
+<td style="text-align:right;">
+2.9e+02
+</td>
+<td style="text-align:right;">
+0.85
+</td>
+<td style="text-align:right;">
+-0.471
+</td>
+<td style="text-align:right;">
+3.5e+01
+</td>
+<td style="text-align:right;">
+1.1e+02
+</td>
+<td style="text-align:right;">
+3.3e+02
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.1e+01
+</td>
+<td style="text-align:right;">
+7.0e+01
+</td>
+<td style="text-align:right;">
+1.2e+00
+</td>
+<td style="text-align:right;">
+5.8e+01
+</td>
+<td style="text-align:right;">
+1.76
+</td>
+<td style="text-align:right;">
+2.482
+</td>
+<td style="text-align:right;">
+4.0e+00
+</td>
+<td style="text-align:right;">
+1.2e+01
+</td>
+<td style="text-align:right;">
+6.2e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4.6e+01
+</td>
+<td style="text-align:right;">
+1.7e+01
+</td>
+<td style="text-align:right;">
+2.9e-01
+</td>
+<td style="text-align:right;">
+2.0e+01
+</td>
+<td style="text-align:right;">
+1.08
+</td>
+<td style="text-align:right;">
+0.645
+</td>
+<td style="text-align:right;">
+3.3e+01
+</td>
+<td style="text-align:right;">
+4.2e+01
+</td>
+<td style="text-align:right;">
+5.4e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+3148
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.9e+01
+</td>
+<td style="text-align:right;">
+9.6e+01
+</td>
+<td style="text-align:right;">
+1.7e+00
+</td>
+<td style="text-align:right;">
+1.6e+01
+</td>
+<td style="text-align:right;">
+1.84
+</td>
+<td style="text-align:right;">
+1.973
+</td>
+<td style="text-align:right;">
+9.0e+00
+</td>
+<td style="text-align:right;">
+1.6e+01
+</td>
+<td style="text-align:right;">
+2.5e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2.6e+08
+</td>
+<td style="text-align:right;">
+2.2e+08
+</td>
+<td style="text-align:right;">
+3.9e+06
+</td>
+<td style="text-align:right;">
+2.4e+08
+</td>
+<td style="text-align:right;">
+2.04
+</td>
+<td style="text-align:right;">
+5.714
+</td>
+<td style="text-align:right;">
+1.0e+08
+</td>
+<td style="text-align:right;">
+1.7e+08
+</td>
+<td style="text-align:right;">
+3.5e+08
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.8e+06
+</td>
+<td style="text-align:right;">
+3.6e+06
+</td>
+<td style="text-align:right;">
+6.3e+04
+</td>
+<td style="text-align:right;">
+2.2e+06
+</td>
+<td style="text-align:right;">
+11.49
+</td>
+<td style="text-align:right;">
+263.331
+</td>
+<td style="text-align:right;">
+2.1e+06
+</td>
+<td style="text-align:right;">
+2.9e+06
+</td>
+<td style="text-align:right;">
+4.4e+06
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+8.8e+07
+</td>
+<td style="text-align:right;">
+5.3e+07
+</td>
+<td style="text-align:right;">
+9.3e+05
+</td>
+<td style="text-align:right;">
+4.8e+07
+</td>
+<td style="text-align:right;">
+3.92
+</td>
+<td style="text-align:right;">
+31.580
+</td>
+<td style="text-align:right;">
+5.6e+07
+</td>
+<td style="text-align:right;">
+7.5e+07
+</td>
+<td style="text-align:right;">
+1.0e+08
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6.9e+06
+</td>
+<td style="text-align:right;">
+5.0e+06
+</td>
+<td style="text-align:right;">
+8.8e+04
+</td>
+<td style="text-align:right;">
+4.1e+06
+</td>
+<td style="text-align:right;">
+4.06
+</td>
+<td style="text-align:right;">
+28.833
+</td>
+<td style="text-align:right;">
+4.1e+06
+</td>
+<td style="text-align:right;">
+5.5e+06
+</td>
+<td style="text-align:right;">
+8.1e+06
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.3e+07
+</td>
+<td style="text-align:right;">
+2.6e+07
+</td>
+<td style="text-align:right;">
+4.5e+05
+</td>
+<td style="text-align:right;">
+2.0e+07
+</td>
+<td style="text-align:right;">
+7.37
+</td>
+<td style="text-align:right;">
+116.136
+</td>
+<td style="text-align:right;">
+1.9e+07
+</td>
+<td style="text-align:right;">
+2.5e+07
+</td>
+<td style="text-align:right;">
+3.9e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6.0e+07
+</td>
+<td style="text-align:right;">
+5.0e+07
+</td>
+<td style="text-align:right;">
+8.7e+05
+</td>
+<td style="text-align:right;">
+5.0e+07
+</td>
+<td style="text-align:right;">
+3.31
+</td>
+<td style="text-align:right;">
+20.095
+</td>
+<td style="text-align:right;">
+2.9e+07
+</td>
+<td style="text-align:right;">
+4.1e+07
+</td>
+<td style="text-align:right;">
+7.9e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.0e+06
+</td>
+<td style="text-align:right;">
+2.8e+06
+</td>
+<td style="text-align:right;">
+4.8e+04
+</td>
+<td style="text-align:right;">
+2.2e+06
+</td>
+<td style="text-align:right;">
+3.64
+</td>
+<td style="text-align:right;">
+23.679
+</td>
+<td style="text-align:right;">
+3.4e+06
+</td>
+<td style="text-align:right;">
+4.3e+06
+</td>
+<td style="text-align:right;">
+5.7e+06
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.6e+07
+</td>
+<td style="text-align:right;">
+2.1e+07
+</td>
+<td style="text-align:right;">
+3.7e+05
+</td>
+<td style="text-align:right;">
+2.2e+07
+</td>
+<td style="text-align:right;">
+2.26
+</td>
+<td style="text-align:right;">
+8.060
+</td>
+<td style="text-align:right;">
+2.2e+07
+</td>
+<td style="text-align:right;">
+3.0e+07
+</td>
+<td style="text-align:right;">
+4.4e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+2688
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.1e+07
+</td>
+<td style="text-align:right;">
+2.7e+07
+</td>
+<td style="text-align:right;">
+5.2e+05
+</td>
+<td style="text-align:right;">
+2.0e+07
+</td>
+<td style="text-align:right;">
+5.80
+</td>
+<td style="text-align:right;">
+76.309
+</td>
+<td style="text-align:right;">
+1.6e+07
+</td>
+<td style="text-align:right;">
+2.3e+07
+</td>
+<td style="text-align:right;">
+3.6e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3.8e+07
+</td>
+<td style="text-align:right;">
+2.1e+07
+</td>
+<td style="text-align:right;">
+3.8e+05
+</td>
+<td style="text-align:right;">
+2.3e+07
+</td>
+<td style="text-align:right;">
+2.96
+</td>
+<td style="text-align:right;">
+19.204
+</td>
+<td style="text-align:right;">
+2.4e+07
+</td>
+<td style="text-align:right;">
+3.2e+07
+</td>
+<td style="text-align:right;">
+4.7e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.8e+07
+</td>
+<td style="text-align:right;">
+2.1e+07
+</td>
+<td style="text-align:right;">
+3.6e+05
+</td>
+<td style="text-align:right;">
+1.7e+07
+</td>
+<td style="text-align:right;">
+4.09
+</td>
+<td style="text-align:right;">
+29.752
+</td>
+<td style="text-align:right;">
+6.3e+06
+</td>
+<td style="text-align:right;">
+1.2e+07
+</td>
+<td style="text-align:right;">
+2.3e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5.1e+07
+</td>
+<td style="text-align:right;">
+3.2e+07
+</td>
+<td style="text-align:right;">
+5.6e+05
+</td>
+<td style="text-align:right;">
+3.2e+07
+</td>
+<td style="text-align:right;">
+2.96
+</td>
+<td style="text-align:right;">
+16.545
+</td>
+<td style="text-align:right;">
+3.0e+07
+</td>
+<td style="text-align:right;">
+4.3e+07
+</td>
+<td style="text-align:right;">
+6.2e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+3271
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.8e+07
+</td>
+<td style="text-align:right;">
+1.3e+07
+</td>
+<td style="text-align:right;">
+2.2e+05
+</td>
+<td style="text-align:right;">
+1.2e+07
+</td>
+<td style="text-align:right;">
+3.65
+</td>
+<td style="text-align:right;">
+27.508
+</td>
+<td style="text-align:right;">
+1.0e+07
+</td>
+<td style="text-align:right;">
+1.5e+07
+</td>
+<td style="text-align:right;">
+2.2e+07
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+3148
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+9.4e+07
+</td>
+<td style="text-align:right;">
+8.2e+07
+</td>
+<td style="text-align:right;">
+1.5e+06
+</td>
+<td style="text-align:right;">
+7.5e+07
+</td>
+<td style="text-align:right;">
+2.39
+</td>
+<td style="text-align:right;">
+10.021
+</td>
+<td style="text-align:right;">
+4.2e+07
+</td>
+<td style="text-align:right;">
+7.6e+07
+</td>
+<td style="text-align:right;">
+1.2e+08
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="testing-normality" class="level1">
+<h1>Testing Normality</h1>
+<ul>
+<li><p>Shapiro-Wilk test &amp; Q-Q plots</p></li>
+<li><p>Testing overall normality of two columns</p></li>
+<li><p>Testing normality of groups</p></li>
+</ul>
+<section id="normality-of-columns" class="level2">
+<h2 class="anchored" data-anchor-id="normality-of-columns">Normality of Columns</h2>
+<section id="shapiro-wilk-test" class="level4">
+<h4 class="anchored" data-anchor-id="shapiro-wilk-test">Shapiro-Wilk Test</h4>
+<p>Shapiro-Wilk test looks at whether a target distribution is sample form a normal distribution</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Diagnose our categorical columns</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">normality</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">formattable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+vars
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p_value
+</th>
+<th style="text-align:right;">
+sample
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+open
+</td>
+<td style="text-align:right;">
+0.73
+</td>
+<td style="text-align:right;">
+4.8e-67
+</td>
+<td style="text-align:right;">
+5000
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+0.73
+</td>
+<td style="text-align:right;">
+4.4e-67
+</td>
+<td style="text-align:right;">
+5000
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+0.74
+</td>
+<td style="text-align:right;">
+5.6e-67
+</td>
+<td style="text-align:right;">
+5000
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+close
+</td>
+<td style="text-align:right;">
+0.73
+</td>
+<td style="text-align:right;">
+5.0e-67
+</td>
+<td style="text-align:right;">
+5000
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+adj_close
+</td>
+<td style="text-align:right;">
+0.72
+</td>
+<td style="text-align:right;">
+2.0e-68
+</td>
+<td style="text-align:right;">
+5000
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+volume
+</td>
+<td style="text-align:right;">
+0.48
+</td>
+<td style="text-align:right;">
+3.7e-81
+</td>
+<td style="text-align:right;">
+5000
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+</section>
+<section id="q-q-plots" class="level4">
+<h4 class="anchored" data-anchor-id="q-q-plots">Q-Q Plots</h4>
+<p>Plots of the quartiles of a target data set and plot it against predicted quartiles from a normal distribution</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_normality</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-9-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-9-4.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-9-5.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-9-6.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="normality-within-groups" class="level3">
+<h3 class="anchored" data-anchor-id="normality-within-groups"><strong>Normality within Groups</strong></h3>
+<p>Looking within stock_symbol at the subgroup normality</p>
+<section id="shapiro-wilk-test-1" class="level4">
+<h4 class="anchored" data-anchor-id="shapiro-wilk-test-1">Shapiro-Wilk Test</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(stock_symbol) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(high, low, stock_symbol) <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">normality</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">formattable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+variable
+</th>
+<th style="text-align:right;">
+stock_symbol
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p_value
+</th>
+<th style="text-align:right;">
+sample
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+0.77
+</td>
+<td style="text-align:right;">
+1.3e-55
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+0.83
+</td>
+<td style="text-align:right;">
+5.3e-50
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+0.84
+</td>
+<td style="text-align:right;">
+8.6e-50
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+0.89
+</td>
+<td style="text-align:right;">
+9.8e-43
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+0.92
+</td>
+<td style="text-align:right;">
+1.1e-37
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+<td style="text-align:right;">
+2.2e-47
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+0.95
+</td>
+<td style="text-align:right;">
+2.2e-31
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+0.93
+</td>
+<td style="text-align:right;">
+1.3e-37
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+0.95
+</td>
+<td style="text-align:right;">
+2.2e-28
+</td>
+<td style="text-align:right;">
+2688
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+0.79
+</td>
+<td style="text-align:right;">
+1.1e-53
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+<td style="text-align:right;">
+7.9e-47
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+0.72
+</td>
+<td style="text-align:right;">
+3.3e-59
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+0.91
+</td>
+<td style="text-align:right;">
+7.2e-41
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+high
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+0.61
+</td>
+<td style="text-align:right;">
+1.3e-64
+</td>
+<td style="text-align:right;">
+3148
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+AAPL
+</td>
+<td style="text-align:right;">
+0.77
+</td>
+<td style="text-align:right;">
+1.7e-55
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+ADBE
+</td>
+<td style="text-align:right;">
+0.84
+</td>
+<td style="text-align:right;">
+6.7e-50
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+AMZN
+</td>
+<td style="text-align:right;">
+0.84
+</td>
+<td style="text-align:right;">
+1.3e-49
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+CRM
+</td>
+<td style="text-align:right;">
+0.90
+</td>
+<td style="text-align:right;">
+1.7e-42
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+CSCO
+</td>
+<td style="text-align:right;">
+0.93
+</td>
+<td style="text-align:right;">
+3.5e-37
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+GOOGL
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+<td style="text-align:right;">
+3.1e-47
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+IBM
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+<td style="text-align:right;">
+3.5e-30
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+INTC
+</td>
+<td style="text-align:right;">
+0.93
+</td>
+<td style="text-align:right;">
+3.2e-37
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+META
+</td>
+<td style="text-align:right;">
+0.95
+</td>
+<td style="text-align:right;">
+3.2e-28
+</td>
+<td style="text-align:right;">
+2688
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+MSFT
+</td>
+<td style="text-align:right;">
+0.80
+</td>
+<td style="text-align:right;">
+1.4e-53
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+NFLX
+</td>
+<td style="text-align:right;">
+0.86
+</td>
+<td style="text-align:right;">
+7.9e-47
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+NVDA
+</td>
+<td style="text-align:right;">
+0.72
+</td>
+<td style="text-align:right;">
+4.7e-59
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+ORCL
+</td>
+<td style="text-align:right;">
+0.91
+</td>
+<td style="text-align:right;">
+2.4e-40
+</td>
+<td style="text-align:right;">
+3271
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+low
+</td>
+<td style="text-align:right;">
+TSLA
+</td>
+<td style="text-align:right;">
+0.61
+</td>
+<td style="text-align:right;">
+1.3e-64
+</td>
+<td style="text-align:right;">
+3148
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+</section>
+<section id="q-q-plots-1" class="level4">
+<h4 class="anchored" data-anchor-id="q-q-plots-1">Q-Q Plots</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(stock_symbol) <span class="sc">|&gt;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(high, low, stock_symbol) <span class="sc">|&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_normality</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-4.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-5.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-6.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-7.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-8.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-9.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-10.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-11.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-12.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-13.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-14.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-15.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-16.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-17.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-18.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-19.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-20.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-21.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-22.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-23.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-24.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-25.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-26.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-27.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="hw02-02_files/figure-html/unnamed-chunk-11-28.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="produce-an-html-normality-summary" class="level2">
+<h2 class="anchored" data-anchor-id="produce-an-html-normality-summary"><strong>Produce an HTML Normality Summary</strong></h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#eda_web_report(dataset)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

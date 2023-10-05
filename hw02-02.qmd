@@ -3,7 +3,7 @@ title: "hw02-01"
 author: "Shashwat Singh"
 format: html
 editor: visual
-description: "Exploring like a Data Adventurer: Exploring the normality of numerical columns in a novel data set and producing publication quality tables and reports."
+description: "Exploring like a Data Adventurer: Exploring the normality of numerical columns in a novel data set and producing publication quality tables and reports.Using summary statistics to better understand individual columns in a data set."
 ---
 
 # Exploring like a Data Adventurer
@@ -30,17 +30,11 @@ pacman::p_load(dlookr, # Exploratory data analysis
 
 # Load and Examine a Data Set
 
--   Load data and view
--   Examine columns and data types
--   Define box plots
--   Describe meta data
-
 Using the dataset from tidyurl- The dataset contains stock prices of big tech companies and tries to analyse the collapse of "Big Tech" stock prices. The data comes from Yahoo Finance via Kaggle
 
 ```{r}
 # Loading the dataset
-setwd("/Users/shashwatsingh/Desktop/DM/hw-02")
-dataset <- read.csv("big_tech_stock_prices.csv") 
+dataset <- read.csv("/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/data/big_tech_stock_prices.csv") 
 
 # Formattable data
 dataset |>
@@ -69,96 +63,92 @@ dataset |>
 
 -   `unique_rate`: rate of unique value - unique_count / number of observations
 
-# Summary Statistics of your Data
+## Box Plot
 
-## Numerical Variables
+![](/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/Images/boxplot.png)
 
-```{r, warning=FALSE}
-# Summary statistics of our numerical columns
+## Skewness
+
+![](/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/Images/skew_intro-dark.png)
+
+#### **NOTE**
+
+-   "Skewness" has multiple definitions. Several underlying equations mey be at play
+
+-   Skewness is "designed" for distributions with one peak (*unimodal*); it's meaningless for distributions with multiple peaks (*multimodal*).
+
+-   Most default skewness definitions are not robust: a single outlier could completely distort the skewness value.
+
+-   We can't make conclusions about the locations of the mean and the median based on the skewness sign.
+
+## Kurtosis
+
+![](/Users/shashwatsingh/Documents/GitHub/hw-02-shashwatsinghds/Images/kurt_intro-dark.png)
+
+#### **NOTE**
+
+-   There are multiple definitions of kurtosis - i.e., "kurtosis" and "excess kurtosis," but there are other definitions of this measure.
+
+-   Kurtosis may work fine for distributions with one peak (*unimodal*); it's meaningless for distributions with multiple peaks (*multimodal*).
+
+-   The classic definition of kurtosis is not robust: it could be easily spoiled by extreme outliers.
+
+# Describe your Continuous Data
+
+```{r, warning=FALSE, error=FALSE}
+# Summary statistics 
 dataset |>
-  diagnose_numeric() |>
-  formattable()
+  describe() 
 ```
 
--   `min`: minimum value
+-   `describes_variables`: name of the column being described
 
--   `Q1`: 1/4 quartile, 25th percentile
+-   `n`: number of observations excluding missing values
 
--   `mean`: arithmetic mean (average value)
+-   `na`: number of missing values
 
--   `median`: median, 50th percentile
+-   `mean`: arithmetic average
 
--   `Q3`: 3/4 quartile, 75th percentile
+-   `sd`: standard deviation
 
--   `max`: maximum value
+-   `se_mean`: standard error mean. sd/sqrt(n)
 
--   `zero`: number of observations with the value 0
+-   `IQR`: interquartile range (Q3-Q1)
 
--   `minus`: number of observations with negative numbers
+-   `skewness`: skewness
 
--   `outlier`: number of outliers
+-   `kurtosis`: kurtosis
 
-## Outliers
+-   `p25`: Q1. 25% percentile
 
-Any values that lie outside 1.5 \* IQR (Interquartile Range)
+-   `p50`: median. 50% percentile
 
-Let's see what the data look like with and without them
+-   `p75`: Q3. 75% percentile
 
--   Create a table with columns containing outliers
+-   `p01`, `p05`, `p10`, `p20`, `p30`: 1%, 5%, 20%, 30% percentiles
 
--   Plot outliers in a box plot and histogram
+-   `p40`, `p60`, `p70`, `p80`: 40%, 60%, 70%, 80% percentiles
 
-```{r, warning=FALSE}
-# Table showing outliers
-diagnose_outlier(dataset) |>
-  filter(outliers_ratio > 0) |>
-  formattable()
-```
+-   `p90`, `p95`, `p99`, `p100`: 90%, 95%, 99%, 100% percentiles
 
--   `outliers_cnt`: number of outliers
+# Describe your Continuous Data: Refined
 
--   `outliers_ratio`: ratio of outliers over all values
+The above is pretty overwhelming, and most people don't care about percentiles outside of Q1, Q3, and the median (Q2).
 
--   `outliers_mean`: arithmetic mean (average value) of outlier values
-
--   `with_mean`: arithmetic mean of all values **including** outliers
-
--   `without_mean`: arithmetic mean of all values **excluding** outliers
-
-```{r, warning=FALSE}
-# Selecting desired columns 
+```{r, warning=FALSE, error= FALSE}
+# Summary statistics, selecting the desired ones
 dataset |>
-    plot_outlier()
+  describe()|>
+  select(described_variables, n, na, mean, sd, se_mean, IQR, skewness, kurtosis, p25, p50, p75) 
+
+
 ```
 
-## Missing Values (NAs)
-
--   Table showing the extent of NAs in columns containing them
-
--   Plot showing the frequency of missing values
+# Describe Categorical Variables
 
 ```{r}
-# Create the NA table
 dataset |>
-  generateNA(p = 0.3) |>
-  plot_na_pareto(only_na = TRUE, plot = FALSE) |>
-  formattable() # Publishable table
-```
-
-```{r}
-# Plot the intersect of the columns with the most missing values
-# This means that some combinations of columns have missing values in the same row
-dataset |>
-  generateNA(p = 0.3) |>
-  plot_na_intersect(only_na = TRUE) 
-```
-
-## Categorical Variables
-
-```{r}
-# Diagnose our categorical columns
-dataset |>
-  diagnose_category() |> 
+  diagnose_category() |>
   formattable()
 ```
 
@@ -174,8 +164,72 @@ dataset |>
 
 -   `rank`: rank of the occupancy ratio of levels (order in which the groups are in the category)
 
-# Produce an HTML Summary of a Data Set
+## Group Descriptive Statistics
+
+```{r, error=FALSE}
+dataset |>
+  group_by(stock_symbol) |>
+  describe() |>
+  select(described_variables, stock_symbol, n, na, mean, sd, se_mean, IQR, skewness, kurtosis, p25, p50, p75) |>
+  formattable()
+```
+
+# Testing Normality
+
+-   Shapiro-Wilk test & Q-Q plots
+
+-   Testing overall normality of two columns
+
+-   Testing normality of groups
+
+## Normality of Columns
+
+#### Shapiro-Wilk Test
+
+Shapiro-Wilk test looks at whether a target distribution is sample form a normal distribution
 
 ```{r}
-#diagnose_web_report(dataset)
+# Diagnose our categorical columns
+dataset |>
+  normality() |>
+  formattable()
+```
+
+#### Q-Q Plots
+
+Plots of the quartiles of a target data set and plot it against predicted quartiles from a normal distribution
+
+```{r}
+dataset |>
+plot_normality()
+
+```
+
+### **Normality within Groups**
+
+Looking within stock_symbol at the subgroup normality
+
+#### Shapiro-Wilk Test
+
+```{r}
+dataset |>
+  group_by(stock_symbol) |>
+  select(high, low, stock_symbol) |>
+  normality() |>
+  formattable()
+```
+
+#### Q-Q Plots
+
+```{r}
+dataset |>
+group_by(stock_symbol) |>
+  select(high, low, stock_symbol) |>
+  plot_normality()
+```
+
+## **Produce an HTML Normality Summary**
+
+```{r}
+#eda_web_report(dataset)
 ```
