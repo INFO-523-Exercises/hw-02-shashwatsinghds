@@ -1,25 +1,26 @@
 ---
-title: "hw02-01"
+title: "hw02-03"
 author: "Shashwat Singh"
 format: html
 editor: visual
-description: "Diagnosing like a Doctor: Performing various basic operations such as identifying summary statistics and outliers in the data."
+description: "Transforming like a Data Transformer: Using data transformation to correct non-normality in numerical data."
 ---
 
-# Diagnosing like a Doctor
+# **Transforming like a Data Transformer**
 
-# Install Required Packages
+# Required Setup
 
 ```{r}
-# Sets the number of significant figures to two
+# Sets the number of significant figures to two - e.g., 0.01
 options(digits = 2)
 
-# Checking and installing pacman 
-if (!require(pacman))
+# Required package for quick package downloading and loading 
+if (!require(pacman))  
   install.packages("pacman")
 
 # Downloads and load required packages
 pacman::p_load(dlookr, # Exploratory data analysis
+               forecast, # Needed for Box-Cox transformations
                formattable, # HTML tables from R outputs
                here, # Standardizes paths to data
                kableExtra, # Alternative to formattable
@@ -32,150 +33,210 @@ pacman::p_load(dlookr, # Exploratory data analysis
 
 -   Load data and view
 -   Examine columns and data types
--   Define box plots
--   Describe meta data
-
-Using the dataset from tidyurl- The dataset contains stock prices of big tech companies and tries to analyse the collapse of "Big Tech" stock prices. The data comes from Yahoo Finance via Kaggle
+-   Examine data normality
+-   Describe properties of data
 
 ```{r}
 # Loading the dataset
-setwd("/Users/shashwatsingh/Desktop/DM/hw-02")
-dataset <- read.csv("big_tech_stock_prices.csv") 
+#setwd("/Users/shashwatsingh/Desktop/DM/hw-02")
+#dataset <- read.csv("data/big_tech_stock_prices.csv") 
 
-# Formattable data
+
+# Let's load a data set from the diabetes data set
+dataset <- read.csv("data/big_tech_stock_prices.csv") |>
+  mutate(
+    OpenGroup = ifelse(open >= 1 & open <= 10, "LowOpen", 
+                       ifelse(open > 10 & open <= 100, "MediumOpen", "HighOpen"))
+  )
+
+
 dataset |>
   head() |>
   formattable()
 ```
 
-# Diagnose your Data
+### **Data Normality**
 
-```{r}
-#Properties of the data
-dataset |>
-  diagnose() |>
+Normal distributions (bell curves) are a common data assumptions for many [hypothesis testing statistics](https://en.wikipedia.org/wiki/Statistical_hypothesis_testing), in particular [parametric statistics](https://en.wikipedia.org/wiki/Parametric_statistics). Deviations from normality can either strongly skew the results or reduce the power to detect a [significant statistical difference](https://en.wikipedia.org/wiki/Statistical_significance).
+
+Here are the distribution properties to know and consider:
+
+-   The mean, median, and mode are the same value.
+
+-   Distribution symmetry at the mean.
+
+-   Normal distributions can be described by the mean and standard deviation.
+
+### **Describing Properties of our Data (Refined)**
+
+#### Skewness
+
+The symmetry of the distribution
+
+See [Introduction 4.3](https://gchism94.github.io/EDA_In_R_Book/intro.html#sec-DistShape) for more information about these values
+
+```{r, error= FALSE}
+  dataset |>
+  select(open, high, low, close) |>
+  describe() |>
+  select(described_variables, skewness) |>
   formattable()
+
+
 ```
 
--   `variables`: name of each variable
+-   `describes_variables`: name of the column being described
 
--   `types`: data type of each variable
+-   `skewness`: skewness
 
--   `missing_count`: number of missing values
+# **Testing Normality (Accelerated)**
 
--   `missing_percent`: percentage of missing values
+-   Q-Q plots
 
--   `unique_count`: number of unique values
+-   Testing overall normality of two columns
 
--   `unique_rate`: rate of unique value - unique_count / number of observations
+-   Testing normality of groups
 
-# Summary Statistics of your Data
+**Note** that you can also use `normality()` to run Shapiro-Wilk tests, but since this test is not viable at `N < 20`, I recommend Q-Q plots.
 
-## Numerical Variables
+------------------------------------------------------------------------
 
-```{r, warning=FALSE}
-# Summary statistics of our numerical columns
-dataset |>
-  diagnose_numeric() |>
-  formattable()
-```
+#### Q-Q Plots
 
--   `min`: minimum value
+Plots of the quartiles of a target data set against the predicted quartiles from a normal distribution.
 
--   `Q1`: 1/4 quartile, 25th percentile
-
--   `mean`: arithmetic mean (average value)
-
--   `median`: median, 50th percentile
-
--   `Q3`: 3/4 quartile, 75th percentile
-
--   `max`: maximum value
-
--   `zero`: number of observations with the value 0
-
--   `minus`: number of observations with negative numbers
-
--   `outlier`: number of outliers
-
-## Outliers
-
-Any values that lie outside 1.5 \* IQR (Interquartile Range)
-
-Let's see what the data look like with and without them
-
--   Create a table with columns containing outliers
-
--   Plot outliers in a box plot and histogram
-
-```{r, warning=FALSE}
-# Table showing outliers
-diagnose_outlier(dataset) |>
-  filter(outliers_ratio > 0) |>
-  formattable()
-```
-
--   `outliers_cnt`: number of outliers
-
--   `outliers_ratio`: ratio of outliers over all values
-
--   `outliers_mean`: arithmetic mean (average value) of outlier values
-
--   `with_mean`: arithmetic mean of all values **including** outliers
-
--   `without_mean`: arithmetic mean of all values **excluding** outliers
-
-```{r, warning=FALSE}
-# Selecting desired columns 
-dataset |>
-    plot_outlier()
-```
-
-## Missing Values (NAs)
-
--   Table showing the extent of NAs in columns containing them
-
--   Plot showing the frequency of missing values
+Notably, `plot_normality()` will show you the logaritmic and skewed transformations (more below)
 
 ```{r}
-# Create the NA table
 dataset |>
-  generateNA(p = 0.3) |>
-  plot_na_pareto(only_na = TRUE, plot = FALSE) |>
-  formattable() # Publishable table
+plot_normality(high, low, open)
+```
+
+# **Normality within Groups**
+
+Looking within OpenGroup at the subgroup normality
+
+#### Q-Q Plots
+
+```{r}
+dataset %>%
+  group_by(OpenGroup) %>%
+  select(open, close) %>%
+  plot_normality()
+```
+
+# Transforming Data
+
+Your data could be more easily interpreted with a transformation, since not all relationships in nature follow a linear relationship - i.e., many biological phenomena follow a power law (or logarithmic curve), where they do not scale linearly.
+
+We will try to transform the "close" column with through several approaches and discuss the pros and cons of each.
+
+```{r}
+closeMod <- dataset |>
+  filter(close > 0)
+```
+
+### **Square-root, Cube-root, and Logarithmic Transformations**
+
+Resolving Skewness using `transform()`.
+
+\"sqrt\": [square-root transformation](https://en.wikipedia.org/wiki/Square_root). � **(moderate skew)**
+
+\"log\": [log transformation](https://en.wikipedia.org/wiki/Logarithm). ���(�) **(greater skew)**
+
+\"log+1\": log transformation. ���(�+1). Used for values that contain 0.
+
+\"1/x\": [inverse transformation](https://en.wikipedia.org/wiki/Inverse_function). 1/� **(severe skew)**
+
+\"x\^2\": [squared transformation](https://en.wikipedia.org/wiki/Quadratic_function). �2
+
+\"x\^3\": [cubed transformation](https://en.wikipedia.org/wiki/Cubic_function). �3
+
+We will compare the `sqrt`, `log+1`, `1/x` (inverse), `x^2`, and `x^3` transformations. Note that you would have to add a constant to use the `log` transformation, so it is easier to use the `log+1` instead. You however need to add a constant to both the `sqrt` and `1/x` transformations because they don\'t include zeros and will otherwise skew the results. *This dataset doesn't contain zeroes.*
+
+#### Square-root Transformation
+
+```{r}
+sqrtClose <- transform(closeMod$close, method = "sqrt") 
+
+summary(sqrtClose)
 ```
 
 ```{r}
-# Plot the intersect of the columns with the most missing values
-# This means that some combinations of columns have missing values in the same row
-dataset |>
-  generateNA(p = 0.3) |>
-  plot_na_intersect(only_na = TRUE) 
+sqrtClose |> 
+  plot()
 ```
 
-## Categorical Variables
+#### Logarithmic (+1) Transformation
 
 ```{r}
-# Diagnose our categorical columns
-dataset |>
-  diagnose_category() |> 
-  formattable()
+Log1Close <- transform(closeMod$close, method = "log+1") 
+
+summary(Log1Close)
 ```
 
--   `variables`: category names
+```{r}
+Log1Close |>
+  plot()
+```
 
--   `levels`: group names within categories
-
--   `N`: number of observation
-
--   `freq`: number of observation at group level / number of observation at category level
-
--   `ratio`: percentage of observation at group level / number of observation at category level
-
--   `rank`: rank of the occupancy ratio of levels (order in which the groups are in the category)
-
-# Produce an HTML Summary of a Data Set
+#### Inverse Transformation
 
 ```{r}
-#diagnose_web_report(dataset)
+InvClose <- transform(closeMod$close, method = "1/x") 
+
+summary(InvClose)
+```
+
+```{r}
+InvClose|>
+  plot()
+```
+
+#### Squared Transformation
+
+```{r}
+SqrdClose <- transform(closeMod$close, method = "x^2") 
+
+summary(SqrdClose)
+```
+
+```{r}
+
+SqrdClose|>
+  plot()
+```
+
+#### Cubed Transformation
+
+```{r}
+CubeClose <- transform(closeMod$close, method = "x^3") 
+
+summary(CubeClose)
+```
+
+```{r}
+CubeClose|>
+  plot()
+```
+
+### **Box-cox Transformation**
+
+There are several transformations, each with it\'s own \"criteria\", and they don\'t always fix extremely skewed data. Instead, you can just choose the [Box-Cox transformation](https://en.wikipedia.org/wiki/Box%E2%80%93Cox_distribution) which searches for the the best lambda value that maximizes the log-likelihood (basically, what power transformation is best). The benefit is that you should have normally distributed data after, but the power relationship might be pretty abstract (i.e., what would a transformation of x\^0.12 be interpreted as in your system?..)
+
+```{r}
+BoxCoxClose <- transform(closeMod$close, method = "Box-Cox") 
+
+summary(BoxCoxClose)
+```
+
+```{r}
+BoxCoxClose |>
+  plot()
+```
+
+## **Produce an HTML Transformation Summary**
+
+```{r, echo=FALSE, eval=FALSE}
+transformation_web_report(dataset)
 ```
