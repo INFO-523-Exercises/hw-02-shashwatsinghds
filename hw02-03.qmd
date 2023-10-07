@@ -140,19 +140,19 @@ closeMod <- dataset |>
 
 Resolving Skewness using `transform()`.
 
-\"sqrt\": [square-root transformation](https://en.wikipedia.org/wiki/Square_root). � **(moderate skew)**
+"sqrt": [square-root transformation](https://en.wikipedia.org/wiki/Square_root). � **(moderate skew)**
 
-\"log\": [log transformation](https://en.wikipedia.org/wiki/Logarithm). ���(�) **(greater skew)**
+"log": [log transformation](https://en.wikipedia.org/wiki/Logarithm). ���(�) **(greater skew)**
 
-\"log+1\": log transformation. ���(�+1). Used for values that contain 0.
+"log+1": log transformation. ���(�+1). Used for values that contain 0.
 
-\"1/x\": [inverse transformation](https://en.wikipedia.org/wiki/Inverse_function). 1/� **(severe skew)**
+"1/x": [inverse transformation](https://en.wikipedia.org/wiki/Inverse_function). 1/� **(severe skew)**
 
-\"x\^2\": [squared transformation](https://en.wikipedia.org/wiki/Quadratic_function). �2
+"x\^2": [squared transformation](https://en.wikipedia.org/wiki/Quadratic_function). �2
 
-\"x\^3\": [cubed transformation](https://en.wikipedia.org/wiki/Cubic_function). �3
+"x\^3": [cubed transformation](https://en.wikipedia.org/wiki/Cubic_function). �3
 
-We will compare the `sqrt`, `log+1`, `1/x` (inverse), `x^2`, and `x^3` transformations. Note that you would have to add a constant to use the `log` transformation, so it is easier to use the `log+1` instead. You however need to add a constant to both the `sqrt` and `1/x` transformations because they don\'t include zeros and will otherwise skew the results. *This dataset doesn't contain zeroes.*
+We will compare the `sqrt`, `log+1`, `1/x` (inverse), `x^2`, and `x^3` transformations. Note that you would have to add a constant to use the `log` transformation, so it is easier to use the `log+1` instead. You however need to add a constant to both the `sqrt` and `1/x` transformations because they don't include zeros and will otherwise skew the results. *This dataset doesn't contain zeroes.*
 
 #### Square-root Transformation
 
@@ -222,7 +222,7 @@ CubeClose|>
 
 ### **Box-cox Transformation**
 
-There are several transformations, each with it\'s own \"criteria\", and they don\'t always fix extremely skewed data. Instead, you can just choose the [Box-Cox transformation](https://en.wikipedia.org/wiki/Box%E2%80%93Cox_distribution) which searches for the the best lambda value that maximizes the log-likelihood (basically, what power transformation is best). The benefit is that you should have normally distributed data after, but the power relationship might be pretty abstract (i.e., what would a transformation of x\^0.12 be interpreted as in your system?..)
+There are several transformations, each with it's own "criteria", and they don't always fix extremely skewed data. Instead, you can just choose the [Box-Cox transformation](https://en.wikipedia.org/wiki/Box%E2%80%93Cox_distribution) which searches for the the best lambda value that maximizes the log-likelihood (basically, what power transformation is best). The benefit is that you should have normally distributed data after, but the power relationship might be pretty abstract (i.e., what would a transformation of x\^0.12 be interpreted as in your system?..)
 
 ```{r}
 BoxCoxClose <- transform(closeMod$close, method = "Box-Cox") 
