@@ -525,13 +525,13 @@ close
 <section id="square-root-cube-root-and-logarithmic-transformations" class="level3">
 <h3 class="anchored" data-anchor-id="square-root-cube-root-and-logarithmic-transformations"><strong>Square-root, Cube-root, and Logarithmic Transformations</strong></h3>
 <p>Resolving Skewness using <code>transform()</code>.</p>
-<p>"sqrt": <a href="https://en.wikipedia.org/wiki/Square_root">square-root transformation</a>. � <strong>(moderate skew)</strong></p>
-<p>"log": <a href="https://en.wikipedia.org/wiki/Logarithm">log transformation</a>. ���(�) <strong>(greater skew)</strong></p>
-<p>"log+1": log transformation. ���(�+1). Used for values that contain 0.</p>
-<p>"1/x": <a href="https://en.wikipedia.org/wiki/Inverse_function">inverse transformation</a>. 1/� <strong>(severe skew)</strong></p>
-<p>"x^2": <a href="https://en.wikipedia.org/wiki/Quadratic_function">squared transformation</a>. �2</p>
-<p>"x^3": <a href="https://en.wikipedia.org/wiki/Cubic_function">cubed transformation</a>. �3</p>
-<p>We will compare the <code>sqrt</code>, <code>log+1</code>, <code>1/x</code> (inverse), <code>x^2</code>, and <code>x^3</code> transformations. Note that you would have to add a constant to use the <code>log</code> transformation, so it is easier to use the <code>log+1</code> instead. You however need to add a constant to both the <code>sqrt</code> and <code>1/x</code> transformations because they don't include zeros and will otherwise skew the results. <em>This dataset doesn’t contain zeroes.</em></p>
+<p>“sqrt”: <a href="https://en.wikipedia.org/wiki/Square_root">square-root transformation</a>. � <strong>(moderate skew)</strong></p>
+<p>“log”: <a href="https://en.wikipedia.org/wiki/Logarithm">log transformation</a>. ���(�) <strong>(greater skew)</strong></p>
+<p>“log+1”: log transformation. ���(�+1). Used for values that contain 0.</p>
+<p>“1/x”: <a href="https://en.wikipedia.org/wiki/Inverse_function">inverse transformation</a>. 1/� <strong>(severe skew)</strong></p>
+<p>“x^2”: <a href="https://en.wikipedia.org/wiki/Quadratic_function">squared transformation</a>. �2</p>
+<p>“x^3”: <a href="https://en.wikipedia.org/wiki/Cubic_function">cubed transformation</a>. �3</p>
+<p>We will compare the <code>sqrt</code>, <code>log+1</code>, <code>1/x</code> (inverse), <code>x^2</code>, and <code>x^3</code> transformations. Note that you would have to add a constant to use the <code>log</code> transformation, so it is easier to use the <code>log+1</code> instead. You however need to add a constant to both the <code>sqrt</code> and <code>1/x</code> transformations because they don’t include zeros and will otherwise skew the results. <em>This dataset doesn’t contain zeroes.</em></p>
 <section id="square-root-transformation" class="level4">
 <h4 class="anchored" data-anchor-id="square-root-transformation">Square-root Transformation</h4>
 <div class="cell">
@@ -577,6 +577,7 @@ p100      6.9e+02        2.6e+01</code></pre>
 <p><img src="hw02-03_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Data is positively skewed and transformation is doing a good job of normalising the data.</p>
 </section>
 <section id="logarithmic-1-transformation" class="level4">
 <h4 class="anchored" data-anchor-id="logarithmic-1-transformation">Logarithmic (+1) Transformation</h4>
@@ -623,6 +624,7 @@ p100      6.9e+02        6.5e+00</code></pre>
 <p><img src="hw02-03_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Data is positively skewed and Log transformation is doing an even better job of normalising the data.</p>
 </section>
 <section id="inverse-transformation" class="level4">
 <h4 class="anchored" data-anchor-id="inverse-transformation">Inverse Transformation</h4>
@@ -669,6 +671,7 @@ p100      6.9e+02        9.5e-01</code></pre>
 <p><img src="hw02-03_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Data is positively skewed and transformation is not normalizing the data.</p>
 </section>
 <section id="squared-transformation" class="level4">
 <h4 class="anchored" data-anchor-id="squared-transformation">Squared Transformation</h4>
@@ -715,6 +718,7 @@ p100      6.9e+02        4.8e+05</code></pre>
 <p><img src="hw02-03_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Data is positively skewed and transformation is not normalizing the data.</p>
 </section>
 <section id="cubed-transformation" class="level4">
 <h4 class="anchored" data-anchor-id="cubed-transformation">Cubed Transformation</h4>
@@ -761,11 +765,12 @@ p100      6.9e+02        3.3e+08</code></pre>
 <p><img src="hw02-03_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Data is positively skewed and transformation is not normalizing the data.</p>
 </section>
 </section>
 <section id="box-cox-transformation" class="level3">
 <h3 class="anchored" data-anchor-id="box-cox-transformation"><strong>Box-cox Transformation</strong></h3>
-<p>There are several transformations, each with it's own "criteria", and they don't always fix extremely skewed data. Instead, you can just choose the <a href="https://en.wikipedia.org/wiki/Box%E2%80%93Cox_distribution">Box-Cox transformation</a> which searches for the the best lambda value that maximizes the log-likelihood (basically, what power transformation is best). The benefit is that you should have normally distributed data after, but the power relationship might be pretty abstract (i.e., what would a transformation of x^0.12 be interpreted as in your system?..)</p>
+<p>There are several transformations, each with it’s own “criteria”, and they don’t always fix extremely skewed data. Instead, you can just choose the <a href="https://en.wikipedia.org/wiki/Box%E2%80%93Cox_distribution">Box-Cox transformation</a> which searches for the the best lambda value that maximizes the log-likelihood (basically, what power transformation is best). The benefit is that you should have normally distributed data after, but the power relationship might be pretty abstract (i.e., what would a transformation of x^0.12 be interpreted as in your system?..)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>BoxCoxClose <span class="ot">&lt;-</span> <span class="fu">transform</span>(closeMod<span class="sc">$</span>close, <span class="at">method =</span> <span class="st">"Box-Cox"</span>) </span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -809,9 +814,16 @@ p100      6.9e+02        3.7e+00</code></pre>
 <p><img src="hw02-03_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Data is positively skewed and transformation is doing a good job of normalising the data.</p>
+<section id="section" class="level4">
+<h4 class="anchored" data-anchor-id="section"></h4>
+</section>
 </section>
 <section id="produce-an-html-transformation-summary" class="level2">
 <h2 class="anchored" data-anchor-id="produce-an-html-transformation-summary"><strong>Produce an HTML Transformation Summary</strong></h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">transformation_web_report</span>(dataset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 </section>
 

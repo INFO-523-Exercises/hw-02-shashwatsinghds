@@ -10,7 +10,7 @@ description: "Correlating Like a Data Master: Assess relationships within a nove
 
 # **Required setup**
 
-```{r}
+```{r, warning=FALSE}
 if (!require(pacman))
   install.packages("pacman")
 
@@ -60,12 +60,12 @@ correlate(dataset) |>
   formattable()
 ```
 
-```{r}
+```{r, warning=FALSE}
 dataset |>
 plot_correlate()
 ```
 
-The variable's correlation is very high and it makes sense. This is because the variables open, low, high and close of a stock price do not change a lot for a particular day and very close to each other.
+The variable's correlation is very high and it makes sense. This is because the variables open, low, high and close of a stock price do not change a lot for a particular day and very close to each other. This will be visible throughout the various correlation operations below. 
 
 
 # Visualize Correlations within Groups

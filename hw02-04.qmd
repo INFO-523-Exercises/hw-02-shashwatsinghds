@@ -10,7 +10,7 @@ description: "Imputing like a Data Scientist: Exploring, visualizing, and imputi
 
 # Install Required Packages and Environment Setup
 
-```{r}
+```{r, warning= FALSE}
 # Sets the number of significant figures to two - e.g., 0.01
 options(digits = 2)
 
@@ -116,6 +116,8 @@ dataset |>
            plot_outlier()
 ```
 
+Plots for all variables are shifting towards normality without outliers.
+
 # **Basic Exploration of Missing Values (NAs)**
 
 -   Table showing the extent of NAs in columns containing them
@@ -182,7 +184,7 @@ na.dataset |>
      vis_miss() |>
      ggplotly() 
 
-    # This is taking too much time and then failing, so I have commented it
+    # This is taking too much time and then failing, so I have set eval=FALSE
     ```
 
 # **Impute Outliers and NAs**
@@ -365,6 +367,7 @@ Here's a visual example using the `clara()` function from the `cluster` package 
 # KNN plot of our dataset without categories
 autoplot(clara(dataset[-5], 3)) 
 ```
+Note that PC1 has 100% 
 
 ```{r, eval=FALSE}
 # Raw summary, output suppressed
@@ -375,8 +378,9 @@ knn_na_imp_close <- na.dataset |>
 knn_na_imp_close |>
   plot()
 
-# knn imputation does not work because of na values.
+
 ```
+knn imputation does not work here.
 
 #### Pros & Cons of Using KNN Imputation
 

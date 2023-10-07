@@ -167,6 +167,8 @@ sqrtClose |>
   plot()
 ```
 
+Data is positively skewed and transformation is doing a good job of normalising the data.
+
 #### Logarithmic (+1) Transformation
 
 ```{r}
@@ -180,6 +182,8 @@ Log1Close |>
   plot()
 ```
 
+Data is positively skewed and Log transformation is doing an even better job of normalising the data.
+
 #### Inverse Transformation
 
 ```{r}
@@ -192,6 +196,8 @@ summary(InvClose)
 InvClose|>
   plot()
 ```
+
+Data is positively skewed and transformation is not normalizing the data.
 
 #### Squared Transformation
 
@@ -207,6 +213,8 @@ SqrdClose|>
   plot()
 ```
 
+Data is positively skewed and transformation is not normalizing the data.
+
 #### Cubed Transformation
 
 ```{r}
@@ -219,6 +227,8 @@ summary(CubeClose)
 CubeClose|>
   plot()
 ```
+
+Data is positively skewed and transformation is not normalizing the data.
 
 ### **Box-cox Transformation**
 
@@ -235,8 +245,12 @@ BoxCoxClose |>
   plot()
 ```
 
+Data is positively skewed and transformation is doing a good job of normalising the data.
+
+#### 
+
 ## **Produce an HTML Transformation Summary**
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, eval=FALSE}
 transformation_web_report(dataset)
 ```
