@@ -82,7 +82,7 @@ dataset <- dataset |>
   
 ```
 
-```{r}
+```{r, warning=FALSE}
 dataset |>
   group_by(OpenGroup) |>
   plot_correlate()
@@ -90,7 +90,6 @@ dataset |>
 
 This is great, we have our correlations within groups! However, the correlation matrices aren’t always the most intuitive, so let’s plot!
 
-We will be using the ggpairs() function within the GGally package. Specifically, we are looking at the correlations between predawn leaf water potential pLWP and midday leaf water potential mLWP. Leaf water potential is a key indicator for how stressed plants are in droughts.
 
 ```{r}
 dataset |> 
@@ -98,6 +97,8 @@ dataset |>
   ggpairs(aes(color = OpenGroup, alpha = 0.5)) +
   theme(strip.background = element_blank())
 ```
+
+The open group data for HighOpen is highly concentrated and the LowOpen and MediumOpen groups are basically outliers here.
 
 # Describe and Visualize Relationships Based on Target Variables
 
@@ -134,7 +135,7 @@ plot(num_num)
 ## Numerical Target Variables: Categorical Variable of Interest
 Formula: pLWP (numerical response) ~ Group (categorical predictor)
 
-```{r}
+```{r, warning=FALSE}
 
 
 # The categorical predictor variable that we want
@@ -150,7 +151,7 @@ num_cat <- relate(num, OpenGroup)
 summary(num_cat)
 ```
 
-```{r}
+```{r, warning=FALSE}
 plot(num_cat) + 
   theme(axis.text.x = element_blank())
 ```
@@ -171,7 +172,7 @@ cat_num <- relate(categ, close)
 summary(cat_num)
 ```
 
-```{r}
+```{r, warning=FALSE}
 plot(cat_num) 
 ```
 
@@ -209,7 +210,7 @@ cat_cat <- relate(categ, OpenGroup)
 summary(cat_cat)
 ```
 
-```{r}
+```{r, warning=FALSE}
 plot(cat_cat)
 ```
 
